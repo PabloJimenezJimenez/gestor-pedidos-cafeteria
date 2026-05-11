@@ -1,0 +1,454 @@
+@startuml SistemaCafeteria
+' =====================================================================
+' Sistema de gestion de pedidos de cafeteria "La Terminal"
+' Patrones aplicados: Factory Method, Abstract Factory, Decorator,
+' Composite, Template Method, Strategy, Adapter, Observer, State,
+' Facade, Singleton.
+' =====================================================================
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+' =====================================================================
+' SUBSISTEMA 1 - PRODUCTOS
+' Patrones: Template Method, Decorator, Composite
+' =====================================================================
+package "productos" {
+
+    interface Producto {
+        + getPrecio(): double
+        + getDescripcion(): String
+        + preparar(): void
+    }
+
+    abstract class ProductoBase {
+        + {final} preparar(): void
+        # reservarPuesto(): void
+        # {abstract} prepararIngredientes(): void
+        # {abstract} elaborar(): void
+        # emplatar(): void
+        # notificarListo(): void
+    }
+    note right of ProductoBase
+        Template Method:
+        preparar() es final y fija el orden.
+        Subclases solo rellenan los pasos
+        prepararIngredientes() y elaborar().
+    end note
+
+    Producto <|.. ProductoBase
+
+    package "bebidas" {
+        abstract class Cafe
+        class Espresso
+        class Capuccino
+        class Latte
+        class Americano
+
+        abstract class Te
+        class TeRojo
+        class TeNegro
+        class TeVerde
+        class Matcha
+
+        abstract class Refresco
+        class Agua
+        class Zumo
+        class Cola
+        class Nestea
+        class Fanta
+
+        ProductoBase <|-- Cafe
+        Cafe <|-- Espresso
+        Cafe <|-- Capuccino
+        Cafe <|-- Latte
+        Cafe <|-- Americano
+
+        ProductoBase <|-- Te
+        Te <|-- TeRojo
+        Te <|-- TeNegro
+        Te <|-- TeVerde
+        Te <|-- Matcha
+
+        ProductoBase <|-- Refresco
+        Refresco <|-- Agua
+        Refresco <|-- Zumo
+        Refresco <|-- Cola
+        Refresco <|-- Nestea
+        Refresco <|-- Fanta
+    }
+
+    package "comidas.bolleria" {
+        abstract class Bolleria
+        class Suizo
+        class Palmera
+        class Croissant
+        class Donut
+
+        ProductoBase <|-- Bolleria
+        Bolleria <|-- Suizo
+        Bolleria <|-- Palmera
+        Bolleria <|-- Croissant
+        Bolleria <|-- Donut
+    }
+
+    package "comidas.panaderia" {
+        abstract class Panaderia
+        class PanPayes
+        class Baguette
+        class Chapata
+
+        ProductoBase <|-- Panaderia
+        Panaderia <|-- PanPayes
+        Panaderia <|-- Baguette
+        Panaderia <|-- Chapata
+    }
+
+    package "comidas.launch" {
+        interface ItemLaunch {
+            + getPrecio(): double
+            + getDescripcion(): String
+        }
+
+        class ProductoLaunch {
+            - nombre: String
+            - precio: double
+        }
+
+        class PlatoCombinado {
+            - componentes: List<ItemLaunch>
+            + anadir(item: ItemLaunch): void
+        }
+        note right of PlatoCombinado
+            Composite:
+            agrupa varios ItemLaunch
+            (hojas u otros compuestos)
+            y los trata como uno solo.
+        end note
+
+        ItemLaunch <|.. ProductoLaunch
+        ItemLaunch <|.. PlatoCombinado
+        PlatoCombinado o--> "0..*" ItemLaunch : componentes
+
+        ProductoBase <|-- ProductoLaunch
+        Producto <|.. PlatoCombinado
+
+        class Huevos
+        class Bacon
+        class Salchichas
+        class Yogur
+        class Fruta
+
+        ProductoLaunch <|-- Huevos
+        ProductoLaunch <|-- Bacon
+        ProductoLaunch <|-- Salchichas
+        ProductoLaunch <|-- Yogur
+        ProductoLaunch <|-- Fruta
+    }
+
+    package "decoradores" {
+        abstract class DecoradorProducto {
+            # envuelto: Producto
+            + getPrecio(): double
+            + getDescripcion(): String
+            + preparar(): void
+        }
+        note right of DecoradorProducto
+            Decorator:
+            envuelve un Producto y delega,
+            sumando precio y modificando
+            la descripcion.
+        end note
+
+        Producto <|.. DecoradorProducto
+        DecoradorProducto o--> "1" Producto : envuelto
+
+        package "complementos" {
+            abstract class ComplementoBebida
+            class Azucar
+            class Miel
+            class LecheSinLactosa
+            class LecheAvena
+
+            DecoradorProducto <|-- ComplementoBebida
+            ComplementoBebida <|-- Azucar
+            ComplementoBebida <|-- Miel
+            ComplementoBebida <|-- LecheSinLactosa
+            ComplementoBebida <|-- LecheAvena
+        }
+
+        package "formatos" {
+            abstract class FormatoPanaderia
+            class Tostada
+            class MediaTostada
+            class Unidad
+
+            DecoradorProducto <|-- FormatoPanaderia
+            FormatoPanaderia <|-- Tostada
+            FormatoPanaderia <|-- MediaTostada
+            FormatoPanaderia <|-- Unidad
+        }
+    }
+}
+
+' =====================================================================
+' SUBSISTEMA 2 - FACTORIAS
+' Patrones: Factory Method, Abstract Factory
+' =====================================================================
+package "factorias" {
+
+    package "factorias.productos" {
+        interface FabricaProductos {
+            + crear(tipo: String): Producto
+        }
+        note right of FabricaProductos
+            Factory Method:
+            cada subfamilia tiene su
+            fabrica concreta que sabe
+            instanciar sus productos.
+        end note
+
+        class FabricaCafes
+        class FabricaTes
+        class FabricaRefrescos
+        class FabricaBolleria
+        class FabricaPanaderia
+        class FabricaLaunch
+
+        FabricaProductos <|.. FabricaCafes
+        FabricaProductos <|.. FabricaTes
+        FabricaProductos <|.. FabricaRefrescos
+        FabricaProductos <|.. FabricaBolleria
+        FabricaProductos <|.. FabricaPanaderia
+        FabricaProductos <|.. FabricaLaunch
+    }
+
+    package "factorias.complementos" {
+        interface FabricaComplementos {
+            + crearAzucar(): ComplementoBebida
+            + crearMiel(): ComplementoBebida
+            + crearLecheSinLactosa(): ComplementoBebida
+            + crearLecheAvena(): ComplementoBebida
+        }
+        note right of FabricaComplementos
+            Abstract Factory:
+            cada bebida expone la familia
+            de complementos validos para
+            ella. Los no validos lanzan
+            UnsupportedOperationException.
+        end note
+
+        class FabricaComplementosEspresso
+        class FabricaComplementosCapuccino
+        class FabricaComplementosLatte
+        class FabricaComplementosTe
+
+        FabricaComplementos <|.. FabricaComplementosEspresso
+        FabricaComplementos <|.. FabricaComplementosCapuccino
+        FabricaComplementos <|.. FabricaComplementosLatte
+        FabricaComplementos <|.. FabricaComplementosTe
+    }
+}
+
+' =====================================================================
+' SUBSISTEMA 3 - PEDIDO
+' Patrones: State, Observer
+' =====================================================================
+package "pedido" {
+
+    class Pedido {
+        - items: List<Producto>
+        - estado: EstadoPedido
+        - observadores: List<ObservadorPedido>
+        + anadirItem(p: Producto): void
+        + pagar(metodo: MetodoPago): void
+        + prepararse(): void
+        + marcarListo(): void
+        + entregar(): void
+        + setEstado(e: EstadoPedido): void
+        + registrar(o: ObservadorPedido): void
+        + eliminar(o: ObservadorPedido): void
+        + notificar(): void
+        + getTotal(): double
+    }
+
+    package "pedido.estados" {
+        interface EstadoPedido {
+            + pagar(p: Pedido, m: MetodoPago): void
+            + prepararse(p: Pedido): void
+            + marcarListo(p: Pedido): void
+            + entregar(p: Pedido): void
+        }
+        note right of EstadoPedido
+            State:
+            cada estado concreto
+            implementa solo las
+            transiciones validas;
+            las invalidas lanzan
+            IllegalStateException.
+        end note
+
+        class Pendiente
+        class EnPreparacion
+        class Listo
+        class Entregado
+
+        EstadoPedido <|.. Pendiente
+        EstadoPedido <|.. EnPreparacion
+        EstadoPedido <|.. Listo
+        EstadoPedido <|.. Entregado
+    }
+
+    package "pedido.observador" {
+        interface ObservadorPedido {
+            + alCambiarEstado(p: Pedido): void
+        }
+        note right of ObservadorPedido
+            Observer:
+            multiples elementos pueden
+            suscribirse a los cambios
+            de estado de un pedido.
+        end note
+
+        class PantallaTerminal
+        class PanelInformativo
+        class RegistroAuditoria
+
+        ObservadorPedido <|.. PantallaTerminal
+        ObservadorPedido <|.. PanelInformativo
+        ObservadorPedido <|.. RegistroAuditoria
+    }
+
+    Pedido o--> "1" EstadoPedido : estado
+    Pedido o--> "0..*" ObservadorPedido : observadores
+    Pedido o--> "0..*" Producto : items
+}
+
+' =====================================================================
+' SUBSISTEMA 4 - PAGO
+' Patrones: Strategy, Adapter
+' =====================================================================
+package "pago" {
+
+    interface MetodoPago {
+        + cobrar(importe: double): boolean
+    }
+    note right of MetodoPago
+        Strategy:
+        el algoritmo de cobro varia
+        sin afectar al resto del sistema.
+    end note
+
+    class PagoEfectivo
+    class PagoBizum
+
+    MetodoPago <|.. PagoEfectivo
+    MetodoPago <|.. PagoBizum
+
+    package "pago.tpv" {
+        class TPVBancario {
+            + iniciarTransaccion(): void
+            + leerBanda(): void
+            + confirmarImporte(importe: double): void
+            + obtenerCodigoAutorizacion(): String
+        }
+        note bottom of TPVBancario
+            Componente externo
+            con API incompatible.
+        end note
+
+        class AdaptadorTPVBancario {
+            - tpv: TPVBancario
+            + cobrar(importe: double): boolean
+        }
+        note right of AdaptadorTPVBancario
+            Adapter:
+            traduce cobrar(importe) a la
+            secuencia que espera el TPV
+            real (iniciar -> leer -> ...).
+        end note
+
+        MetodoPago <|.. AdaptadorTPVBancario
+        AdaptadorTPVBancario o--> "1" TPVBancario : tpv
+    }
+}
+
+' =====================================================================
+' SUBSISTEMA 5 - COCINA Y SISTEMA RAIZ
+' Patrones: Singleton, Facade
+' =====================================================================
+package "cocina" {
+    class Cocina <<singleton>> {
+        - {static} instancia: Cocina
+        - cola: Queue<Pedido>
+        - Cocina()
+        + {static} getInstance(): Cocina
+        + encolar(p: Pedido): void
+        + procesarSiguiente(): void
+    }
+    note right of Cocina
+        Singleton:
+        una unica cocina por local.
+        Recibe pedidos y dispara
+        producto.preparar() (template).
+    end note
+}
+
+package "sistema" {
+
+    class Catalogo <<singleton>> {
+        - {static} instancia: Catalogo
+        - fabricasProductos: Map<String, FabricaProductos>
+        - Catalogo()
+        + {static} getInstance(): Catalogo
+        + getFabrica(categoria: String): FabricaProductos
+        + getFabricaComplementos(bebida: Producto): FabricaComplementos
+    }
+    note right of Catalogo
+        Singleton:
+        unico catalogo de productos
+        compartido por toda la app.
+    end note
+
+    class GestorCafeteria <<facade>> {
+        - {static} instancia: GestorCafeteria
+        - catalogo: Catalogo
+        - cocina: Cocina
+        - pedidosActivos: List<Pedido>
+        - GestorCafeteria()
+        + {static} getInstance(): GestorCafeteria
+        + crearNuevoPedido(): Pedido
+        + anadirProducto(p: Pedido, prod: Producto): void
+        + cobrar(p: Pedido, m: MetodoPago): boolean
+        + consultarEstado(p: Pedido): EstadoPedido
+    }
+    note right of GestorCafeteria
+        Facade:
+        unico punto de entrada para
+        la Terminal. Oculta catalogo,
+        cocina, pagos y estados.
+    end note
+
+    class Terminal <<singleton>> {
+        - {static} instancia: Terminal
+        - gestor: GestorCafeteria
+        - Terminal()
+        + {static} getInstance(): Terminal
+        + iniciar(): void
+    }
+    note right of Terminal
+        Singleton:
+        una unica terminal por local.
+        Solo conoce al GestorCafeteria.
+    end note
+
+    GestorCafeteria o--> "1" Catalogo
+    GestorCafeteria o--> "1" Cocina
+    GestorCafeteria o--> "0..*" Pedido
+    Terminal --> GestorCafeteria : usa
+    Catalogo o--> "0..*" FabricaProductos
+}
+
+@enduml
