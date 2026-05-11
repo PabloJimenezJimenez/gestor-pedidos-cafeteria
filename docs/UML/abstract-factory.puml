@@ -1,0 +1,40 @@
+@startuml AbstractFactory
+' Patron Abstract Factory. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface Product
+
+abstract class Topping
+
+interface ToppingFactory {
+    + createSugar(p: Product): Topping
+    + createHoney(p: Product): Topping
+    + createLactoseFreeMilk(p: Product): Topping
+    + createOatMilk(p: Product): Topping
+}
+
+class EspressoToppingFactory
+class CappuccinoToppingFactory
+class LatteToppingFactory
+class TeaToppingFactory
+
+ToppingFactory <|.. EspressoToppingFactory
+ToppingFactory <|.. CappuccinoToppingFactory
+ToppingFactory <|.. LatteToppingFactory
+ToppingFactory <|.. TeaToppingFactory
+
+ToppingFactory ..> Topping : crea
+
+note right of ToppingFactory
+    Abstract Factory:
+    cada bebida expone la familia
+    de toppings validos para ella.
+    Las combinaciones invalidas
+    lanzan UnsupportedOperationException.
+end note
+
+@enduml

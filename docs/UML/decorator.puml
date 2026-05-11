@@ -1,0 +1,40 @@
+@startuml Decorator
+' Patron Decorator. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface Product {
+    + getPrice(): Double
+    + getDescription(): String
+    + prepare(): void
+}
+
+abstract class ProductDecorator {
+    # wrapped: Product
+    + getPrice(): Double
+    + getDescription(): String
+    + prepare(): void
+    # {abstract} extraPrice(): Double
+    # {abstract} extraDescription(): String
+}
+
+abstract class Topping
+abstract class Format
+
+Product <|.. ProductDecorator
+ProductDecorator o--> "1" Product : wrapped
+ProductDecorator <|-- Topping
+ProductDecorator <|-- Format
+
+note right of ProductDecorator
+    Decorator:
+    envuelve un Product (Component)
+    y delega; cada subclase concreta
+    suma extraPrice() y modifica
+    la descripcion con extraDescription().
+end note
+
+@enduml

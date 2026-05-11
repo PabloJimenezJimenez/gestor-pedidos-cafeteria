@@ -1,9 +1,9 @@
-@startuml SistemaCafeteria
+@startuml CafeteriaSystem
 ' =====================================================================
-' Sistema de gestion de pedidos de cafeteria "La Terminal"
-' Patrones aplicados: Factory Method, Abstract Factory, Decorator,
-' Composite, Template Method, Strategy, Adapter, Observer, State,
-' Facade, Singleton.
+' Sistema de gestion de pedidos de cafeteria "La Terminal".
+' Diagrama sincronizado con el codigo (paquete raiz: cafeteria.*).
+' Patrones: Template Method, Decorator, Composite, Factory Method,
+' Abstract Factory, State, Observer, Strategy, Adapter, Singleton, Facade.
 ' =====================================================================
 
 skinparam classAttributeIconSize 0
@@ -12,276 +12,277 @@ skinparam packageStyle rectangle
 hide empty members
 
 ' =====================================================================
-' SUBSISTEMA 1 - PRODUCTOS
+' SUBSISTEMA 1 - PRODUCTS
 ' Patrones: Template Method, Decorator, Composite
 ' =====================================================================
-package "productos" {
+package "products" {
 
-    interface Producto {
-        + getPrecio(): double
-        + getDescripcion(): String
-        + preparar(): void
+    interface Product {
+        + getPrice(): Double
+        + getDescription(): String
+        + prepare(): void
     }
 
-    abstract class ProductoBase {
-        + {final} preparar(): void
-        # reservarPuesto(): void
-        # {abstract} prepararIngredientes(): void
-        # {abstract} elaborar(): void
-        # emplatar(): void
-        # notificarListo(): void
+    abstract class ProductBase {
+        + {final} prepare(): void
+        # reserveStation(): void
+        # {abstract} prepareIngredients(): void
+        # {abstract} cook(): void
+        # plate(): void
+        # notifyReady(): void
     }
-    note right of ProductoBase
+    note right of ProductBase
         Template Method:
-        preparar() es final y fija el orden.
-        Subclases solo rellenan los pasos
-        prepararIngredientes() y elaborar().
+        prepare() es final y fija el orden.
+        Las subclases solo rellenan
+        prepareIngredients() y cook().
     end note
 
-    Producto <|.. ProductoBase
+    Product <|.. ProductBase
 
-    package "bebidas" {
-        abstract class Cafe
+    package "products.beverage.coffe" {
+        abstract class Coffee
         class Espresso
-        class Capuccino
+        class Cappuccino
         class Latte
         class Americano
 
-        abstract class Te
-        class TeRojo
-        class TeNegro
-        class TeVerde
-        class Matcha
-
-        abstract class Refresco
-        class Agua
-        class Zumo
-        class Cola
-        class Nestea
-        class Fanta
-
-        ProductoBase <|-- Cafe
-        Cafe <|-- Espresso
-        Cafe <|-- Capuccino
-        Cafe <|-- Latte
-        Cafe <|-- Americano
-
-        ProductoBase <|-- Te
-        Te <|-- TeRojo
-        Te <|-- TeNegro
-        Te <|-- TeVerde
-        Te <|-- Matcha
-
-        ProductoBase <|-- Refresco
-        Refresco <|-- Agua
-        Refresco <|-- Zumo
-        Refresco <|-- Cola
-        Refresco <|-- Nestea
-        Refresco <|-- Fanta
+        ProductBase <|-- Coffee
+        Coffee <|-- Espresso
+        Coffee <|-- Cappuccino
+        Coffee <|-- Latte
+        Coffee <|-- Americano
     }
 
-    package "comidas.bolleria" {
-        abstract class Bolleria
+    package "products.beverage.tea" {
+        abstract class Tea
+        class RedTea
+        class BlackTea
+        class GreenTea
+        class Matcha
+
+        ProductBase <|-- Tea
+        Tea <|-- RedTea
+        Tea <|-- BlackTea
+        Tea <|-- GreenTea
+        Tea <|-- Matcha
+    }
+
+    package "products.beverage.softDrink" {
+        abstract class SoftDrinks
+        class Water
+        class Juice
+
+        ProductBase <|-- SoftDrinks
+        SoftDrinks <|-- Water
+        SoftDrinks <|-- Juice
+    }
+
+    package "products.food.pastry" {
+        abstract class Pastry
         class Suizo
         class Palmera
         class Croissant
         class Donut
 
-        ProductoBase <|-- Bolleria
-        Bolleria <|-- Suizo
-        Bolleria <|-- Palmera
-        Bolleria <|-- Croissant
-        Bolleria <|-- Donut
+        ProductBase <|-- Pastry
+        Pastry <|-- Suizo
+        Pastry <|-- Palmera
+        Pastry <|-- Croissant
+        Pastry <|-- Donut
     }
 
-    package "comidas.panaderia" {
-        abstract class Panaderia
+    package "products.food.bread" {
+        abstract class Bread
         class PanPayes
         class Baguette
         class Chapata
 
-        ProductoBase <|-- Panaderia
-        Panaderia <|-- PanPayes
-        Panaderia <|-- Baguette
-        Panaderia <|-- Chapata
+        ProductBase <|-- Bread
+        Bread <|-- PanPayes
+        Bread <|-- Baguette
+        Bread <|-- Chapata
     }
 
-    package "comidas.launch" {
+    package "products.food.launch" {
         interface ItemLaunch {
-            + getPrecio(): double
-            + getDescripcion(): String
+            + getPrice(): Double
+            + getDescription(): String
         }
 
-        class ProductoLaunch {
-            - nombre: String
-            - precio: double
-        }
+        abstract class LaunchProduct
 
-        class PlatoCombinado {
-            - componentes: List<ItemLaunch>
-            + anadir(item: ItemLaunch): void
+        class CombinedDish {
+            - components: List<ItemLaunch>
+            + add(item: ItemLaunch): void
+            + getPrice(): Double
+            + getDescription(): String
+            + prepare(): void
         }
-        note right of PlatoCombinado
+        note right of CombinedDish
             Composite:
             agrupa varios ItemLaunch
             (hojas u otros compuestos)
             y los trata como uno solo.
         end note
 
-        ItemLaunch <|.. ProductoLaunch
-        ItemLaunch <|.. PlatoCombinado
-        PlatoCombinado o--> "0..*" ItemLaunch : componentes
+        ProductBase <|-- LaunchProduct
+        ItemLaunch <|.. LaunchProduct
+        Product <|.. CombinedDish
+        ItemLaunch <|.. CombinedDish
+        CombinedDish o--> "0..*" ItemLaunch : components
 
-        ProductoBase <|-- ProductoLaunch
-        Producto <|.. PlatoCombinado
-
-        class Huevos
+        class Eggs
         class Bacon
-        class Salchichas
-        class Yogur
-        class Fruta
+        class Sausages
+        class Yogurt
+        class Fruit
 
-        ProductoLaunch <|-- Huevos
-        ProductoLaunch <|-- Bacon
-        ProductoLaunch <|-- Salchichas
-        ProductoLaunch <|-- Yogur
-        ProductoLaunch <|-- Fruta
+        LaunchProduct <|-- Eggs
+        LaunchProduct <|-- Bacon
+        LaunchProduct <|-- Sausages
+        LaunchProduct <|-- Yogurt
+        LaunchProduct <|-- Fruit
     }
 
-    package "decoradores" {
-        abstract class DecoradorProducto {
-            # envuelto: Producto
-            + getPrecio(): double
-            + getDescripcion(): String
-            + preparar(): void
+    package "products.decorator" {
+        abstract class ProductDecorator {
+            # wrapped: Product
+            + getPrice(): Double
+            + getDescription(): String
+            + prepare(): void
+            # {abstract} extraPrice(): Double
+            # {abstract} extraDescription(): String
         }
-        note right of DecoradorProducto
+        note right of ProductDecorator
             Decorator:
-            envuelve un Producto y delega,
+            envuelve un Product y delega,
             sumando precio y modificando
-            la descripcion.
+            la descripcion via extraPrice()
+            y extraDescription().
         end note
 
-        Producto <|.. DecoradorProducto
-        DecoradorProducto o--> "1" Producto : envuelto
+        Product <|.. ProductDecorator
+        ProductDecorator o--> "1" Product : wrapped
 
-        package "complementos" {
-            abstract class ComplementoBebida
-            class Azucar
-            class Miel
-            class LecheSinLactosa
-            class LecheAvena
+        package "products.decorator.toppings" {
+            abstract class Topping
+            class Sugar
+            class Honey
+            class LactoseFreeMilk
+            class OatMilk
 
-            DecoradorProducto <|-- ComplementoBebida
-            ComplementoBebida <|-- Azucar
-            ComplementoBebida <|-- Miel
-            ComplementoBebida <|-- LecheSinLactosa
-            ComplementoBebida <|-- LecheAvena
+            ProductDecorator <|-- Topping
+            Topping <|-- Sugar
+            Topping <|-- Honey
+            Topping <|-- LactoseFreeMilk
+            Topping <|-- OatMilk
         }
 
-        package "formatos" {
-            abstract class FormatoPanaderia
-            class Tostada
-            class MediaTostada
-            class Unidad
+        package "products.decorator.formats" {
+            abstract class Format
+            class Toasted
+            class HalfToasted
+            class Unit
 
-            DecoradorProducto <|-- FormatoPanaderia
-            FormatoPanaderia <|-- Tostada
-            FormatoPanaderia <|-- MediaTostada
-            FormatoPanaderia <|-- Unidad
+            ProductDecorator <|-- Format
+            Format <|-- Toasted
+            Format <|-- HalfToasted
+            Format <|-- Unit
         }
     }
 }
 
 ' =====================================================================
-' SUBSISTEMA 2 - FACTORIAS
+' SUBSISTEMA 2 - FACTORIES
 ' Patrones: Factory Method, Abstract Factory
 ' =====================================================================
-package "factorias" {
+package "factories" {
 
-    package "factorias.productos" {
-        interface FabricaProductos {
-            + crear(tipo: String): Producto
+    package "factories.products" {
+        interface ProductFactory {
+            + create(type: String): Product
         }
-        note right of FabricaProductos
+        note right of ProductFactory
             Factory Method:
             cada subfamilia tiene su
             fabrica concreta que sabe
             instanciar sus productos.
         end note
 
-        class FabricaCafes
-        class FabricaTes
-        class FabricaRefrescos
-        class FabricaBolleria
-        class FabricaPanaderia
-        class FabricaLaunch
+        class CoffeeFactory
+        class TeaFactory
+        class SoftDrinkFactory
+        class BreadFactory
+        class PastryFactory
+        class LaunchFactory
 
-        FabricaProductos <|.. FabricaCafes
-        FabricaProductos <|.. FabricaTes
-        FabricaProductos <|.. FabricaRefrescos
-        FabricaProductos <|.. FabricaBolleria
-        FabricaProductos <|.. FabricaPanaderia
-        FabricaProductos <|.. FabricaLaunch
+        ProductFactory <|.. CoffeeFactory
+        ProductFactory <|.. TeaFactory
+        ProductFactory <|.. SoftDrinkFactory
+        ProductFactory <|.. BreadFactory
+        ProductFactory <|.. PastryFactory
+        ProductFactory <|.. LaunchFactory
     }
 
-    package "factorias.complementos" {
-        interface FabricaComplementos {
-            + crearAzucar(): ComplementoBebida
-            + crearMiel(): ComplementoBebida
-            + crearLecheSinLactosa(): ComplementoBebida
-            + crearLecheAvena(): ComplementoBebida
+    package "factories.toppings" {
+        interface ToppingFactory {
+            + createSugar(p: Product): Topping
+            + createHoney(p: Product): Topping
+            + createLactoseFreeMilk(p: Product): Topping
+            + createOatMilk(p: Product): Topping
         }
-        note right of FabricaComplementos
+        note right of ToppingFactory
             Abstract Factory:
             cada bebida expone la familia
-            de complementos validos para
-            ella. Los no validos lanzan
+            de toppings validos para ella.
+            Los no validos lanzan
             UnsupportedOperationException.
         end note
 
-        class FabricaComplementosEspresso
-        class FabricaComplementosCapuccino
-        class FabricaComplementosLatte
-        class FabricaComplementosTe
+        class EspressoToppingFactory
+        class CappuccinoToppingFactory
+        class LatteToppingFactory
+        class TeaToppingFactory
 
-        FabricaComplementos <|.. FabricaComplementosEspresso
-        FabricaComplementos <|.. FabricaComplementosCapuccino
-        FabricaComplementos <|.. FabricaComplementosLatte
-        FabricaComplementos <|.. FabricaComplementosTe
+        ToppingFactory <|.. EspressoToppingFactory
+        ToppingFactory <|.. CappuccinoToppingFactory
+        ToppingFactory <|.. LatteToppingFactory
+        ToppingFactory <|.. TeaToppingFactory
     }
 }
 
 ' =====================================================================
-' SUBSISTEMA 3 - PEDIDO
+' SUBSISTEMA 3 - ORDERS
 ' Patrones: State, Observer
 ' =====================================================================
-package "pedido" {
+package "orders" {
 
-    class Pedido {
-        - items: List<Producto>
-        - estado: EstadoPedido
-        - observadores: List<ObservadorPedido>
-        + anadirItem(p: Producto): void
-        + pagar(metodo: MetodoPago): void
-        + prepararse(): void
-        + marcarListo(): void
-        + entregar(): void
-        + setEstado(e: EstadoPedido): void
-        + registrar(o: ObservadorPedido): void
-        + eliminar(o: ObservadorPedido): void
-        + notificar(): void
-        + getTotal(): double
+    class Order {
+        - id: Integer
+        - items: List<Product>
+        - state: OrderState
+        - observers: List<OrderObserver>
+        + addItem(p: Product): void
+        + pay(method: PaymentMethod): void
+        + prepare(): void
+        + markReady(): void
+        + deliver(): void
+        + setState(s: OrderState): void
+        + registerObserver(o: OrderObserver): void
+        + removeObserver(o: OrderObserver): void
+        + getTotal(): Double
     }
 
-    package "pedido.estados" {
-        interface EstadoPedido {
-            + pagar(p: Pedido, m: MetodoPago): void
-            + prepararse(p: Pedido): void
-            + marcarListo(p: Pedido): void
-            + entregar(p: Pedido): void
+    package "orders.states" {
+        interface OrderState {
+            + pay(o: Order, m: PaymentMethod): void
+            + prepare(o: Order): void
+            + markReady(o: Order): void
+            + deliver(o: Order): void
+            + getName(): String
         }
-        note right of EstadoPedido
+        note right of OrderState
             State:
             cada estado concreto
             implementa solo las
@@ -290,165 +291,174 @@ package "pedido" {
             IllegalStateException.
         end note
 
-        class Pendiente
-        class EnPreparacion
-        class Listo
-        class Entregado
+        class Pending
+        class InPreparation
+        class Ready
+        class Delivered
 
-        EstadoPedido <|.. Pendiente
-        EstadoPedido <|.. EnPreparacion
-        EstadoPedido <|.. Listo
-        EstadoPedido <|.. Entregado
+        OrderState <|.. Pending
+        OrderState <|.. InPreparation
+        OrderState <|.. Ready
+        OrderState <|.. Delivered
     }
 
-    package "pedido.observador" {
-        interface ObservadorPedido {
-            + alCambiarEstado(p: Pedido): void
+    package "orders.observers" {
+        interface OrderObserver {
+            + onStateChanged(o: Order, s: OrderState): void
         }
-        note right of ObservadorPedido
+        note right of OrderObserver
             Observer:
             multiples elementos pueden
             suscribirse a los cambios
             de estado de un pedido.
         end note
 
-        class PantallaTerminal
-        class PanelInformativo
-        class RegistroAuditoria
+        class TerminalScreenObserver
+        class InfoPanelObserver
+        class AuditLogObserver
 
-        ObservadorPedido <|.. PantallaTerminal
-        ObservadorPedido <|.. PanelInformativo
-        ObservadorPedido <|.. RegistroAuditoria
+        OrderObserver <|.. TerminalScreenObserver
+        OrderObserver <|.. InfoPanelObserver
+        OrderObserver <|.. AuditLogObserver
     }
 
-    Pedido o--> "1" EstadoPedido : estado
-    Pedido o--> "0..*" ObservadorPedido : observadores
-    Pedido o--> "0..*" Producto : items
+    Order o--> "1" OrderState : state
+    Order o--> "0..*" OrderObserver : observers
+    Order o--> "0..*" Product : items
 }
 
 ' =====================================================================
-' SUBSISTEMA 4 - PAGO
+' SUBSISTEMA 4 - PAYMENTS
 ' Patrones: Strategy, Adapter
 ' =====================================================================
-package "pago" {
+package "payments" {
 
-    interface MetodoPago {
-        + cobrar(importe: double): boolean
+    interface PaymentMethod {
+        + charge(amount: Double): Boolean
     }
-    note right of MetodoPago
+    note right of PaymentMethod
         Strategy:
         el algoritmo de cobro varia
         sin afectar al resto del sistema.
     end note
 
-    class PagoEfectivo
-    class PagoBizum
+    class CashPayment
+    class BizumPayment {
+        - phoneNumber: String
+    }
 
-    MetodoPago <|.. PagoEfectivo
-    MetodoPago <|.. PagoBizum
+    PaymentMethod <|.. CashPayment
+    PaymentMethod <|.. BizumPayment
 
-    package "pago.tpv" {
-        class TPVBancario {
-            + iniciarTransaccion(): void
-            + leerBanda(): void
-            + confirmarImporte(importe: double): void
-            + obtenerCodigoAutorizacion(): String
+    package "payments.tpv" {
+        class BankTPV {
+            + initiateTransaction(): void
+            + readCard(): void
+            + confirmAmount(amount: Double): void
+            + getAuthorizationCode(): String
         }
-        note bottom of TPVBancario
+        note bottom of BankTPV
             Componente externo
             con API incompatible.
         end note
 
-        class AdaptadorTPVBancario {
-            - tpv: TPVBancario
-            + cobrar(importe: double): boolean
+        class BankTPVAdapter {
+            - tpv: BankTPV
+            + charge(amount: Double): Boolean
         }
-        note right of AdaptadorTPVBancario
+        note right of BankTPVAdapter
             Adapter:
-            traduce cobrar(importe) a la
+            traduce charge(amount) a la
             secuencia que espera el TPV
-            real (iniciar -> leer -> ...).
+            real (initiate -> read -> ...).
         end note
 
-        MetodoPago <|.. AdaptadorTPVBancario
-        AdaptadorTPVBancario o--> "1" TPVBancario : tpv
+        PaymentMethod <|.. BankTPVAdapter
+        BankTPVAdapter o--> "1" BankTPV : tpv
     }
 }
 
 ' =====================================================================
-' SUBSISTEMA 5 - COCINA Y SISTEMA RAIZ
+' SUBSISTEMA 5 - KITCHEN Y SYSTEM (raiz)
 ' Patrones: Singleton, Facade
 ' =====================================================================
-package "cocina" {
-    class Cocina <<singleton>> {
-        - {static} instancia: Cocina
-        - cola: Queue<Pedido>
-        - Cocina()
-        + {static} getInstance(): Cocina
-        + encolar(p: Pedido): void
-        + procesarSiguiente(): void
+package "kitchen" {
+    class Kitchen <<singleton>> {
+        - {static} instance: Kitchen
+        - queue: Queue<Order>
+        - Kitchen()
+        + {static} getInstance(): Kitchen
+        + enqueue(o: Order): void
+        + processNext(): void
+        + hasPendingOrders(): Boolean
     }
-    note right of Cocina
+    note right of Kitchen
         Singleton:
         una unica cocina por local.
         Recibe pedidos y dispara
-        producto.preparar() (template).
+        product.prepare() (template).
     end note
 }
 
-package "sistema" {
+package "system" {
 
-    class Catalogo <<singleton>> {
-        - {static} instancia: Catalogo
-        - fabricasProductos: Map<String, FabricaProductos>
-        - Catalogo()
-        + {static} getInstance(): Catalogo
-        + getFabrica(categoria: String): FabricaProductos
-        + getFabricaComplementos(bebida: Producto): FabricaComplementos
+    class Catalog <<singleton>> {
+        - {static} instance: Catalog
+        - productFactories: Map<String, ProductFactory>
+        - toppingFactories: Map<String, ToppingFactory>
+        - Catalog()
+        + {static} getInstance(): Catalog
+        + getProductFactory(category: String): ProductFactory
+        + getToppingFactory(beverageName: String): ToppingFactory
     }
-    note right of Catalogo
+    note right of Catalog
         Singleton:
         unico catalogo de productos
-        compartido por toda la app.
+        y toppings compartido por
+        toda la aplicacion.
     end note
 
-    class GestorCafeteria <<facade>> {
-        - {static} instancia: GestorCafeteria
-        - catalogo: Catalogo
-        - cocina: Cocina
-        - pedidosActivos: List<Pedido>
-        - GestorCafeteria()
-        + {static} getInstance(): GestorCafeteria
-        + crearNuevoPedido(): Pedido
-        + anadirProducto(p: Pedido, prod: Producto): void
-        + cobrar(p: Pedido, m: MetodoPago): boolean
-        + consultarEstado(p: Pedido): EstadoPedido
+    class CafeteriaManager <<facade>> {
+        - {static} instance: CafeteriaManager
+        - catalog: Catalog
+        - kitchen: Kitchen
+        - activeOrders: List<Order>
+        - CafeteriaManager()
+        + {static} getInstance(): CafeteriaManager
+        + createNewOrder(): Order
+        + createProduct(category: String, type: String): Product
+        + getToppingFactoryFor(beverageName: String): ToppingFactory
+        + addProductToOrder(o: Order, p: Product): void
+        + checkout(o: Order, m: PaymentMethod): Boolean
+        + processKitchenQueue(): void
+        + registerObserverOnOrder(o: Order, obs: OrderObserver): void
     }
-    note right of GestorCafeteria
+    note right of CafeteriaManager
         Facade:
         unico punto de entrada para
-        la Terminal. Oculta catalogo,
-        cocina, pagos y estados.
+        la Terminal. Oculta catalog,
+        kitchen, payments y orders.
     end note
 
     class Terminal <<singleton>> {
-        - {static} instancia: Terminal
-        - gestor: GestorCafeteria
+        - {static} instance: Terminal
+        - manager: CafeteriaManager
         - Terminal()
         + {static} getInstance(): Terminal
-        + iniciar(): void
+        + start(): void
     }
     note right of Terminal
         Singleton:
         una unica terminal por local.
-        Solo conoce al GestorCafeteria.
+        Solo conoce al CafeteriaManager.
     end note
 
-    GestorCafeteria o--> "1" Catalogo
-    GestorCafeteria o--> "1" Cocina
-    GestorCafeteria o--> "0..*" Pedido
-    Terminal --> GestorCafeteria : usa
-    Catalogo o--> "0..*" FabricaProductos
+    CafeteriaManager o--> "1" Catalog
+    CafeteriaManager o--> "1" Kitchen
+    CafeteriaManager o--> "0..*" Order : activeOrders
+    Terminal --> CafeteriaManager : usa
+    Catalog o--> "0..*" ProductFactory
+    Catalog o--> "0..*" ToppingFactory
 }
 
 @enduml

@@ -1,0 +1,29 @@
+@startuml Strategy
+' Patron Strategy. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface PaymentMethod {
+    + charge(amount: Double): Boolean
+}
+
+class CashPayment
+class BizumPayment
+class BankTPVAdapter
+
+PaymentMethod <|.. CashPayment
+PaymentMethod <|.. BizumPayment
+PaymentMethod <|.. BankTPVAdapter
+
+note right of PaymentMethod
+    Strategy:
+    el algoritmo de cobro varia
+    sin afectar al resto del sistema.
+    BankTPVAdapter cumple ademas el
+    rol de Adapter sobre un TPV externo.
+end note
+
+@enduml

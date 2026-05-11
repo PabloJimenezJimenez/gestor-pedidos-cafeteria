@@ -1,0 +1,37 @@
+@startuml Observer
+' Patron Observer. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+class Order {
+    - observers: List<OrderObserver>
+    + registerObserver(o: OrderObserver): void
+    + removeObserver(o: OrderObserver): void
+}
+
+interface OrderObserver {
+    + onStateChanged(o: Order, s: OrderState): void
+}
+
+class TerminalScreenObserver
+class InfoPanelObserver
+class AuditLogObserver
+
+OrderObserver <|.. TerminalScreenObserver
+OrderObserver <|.. InfoPanelObserver
+OrderObserver <|.. AuditLogObserver
+
+Order o--> "0..*" OrderObserver : observers
+
+note right of OrderObserver
+    Observer:
+    multiples elementos pueden
+    suscribirse a los cambios de
+    estado de un pedido; cada uno
+    reacciona de forma independiente.
+end note
+
+@enduml

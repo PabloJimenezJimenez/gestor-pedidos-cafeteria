@@ -1,0 +1,39 @@
+@startuml FactoryMethod
+' Patron Factory Method. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface Product
+
+interface ProductFactory {
+    + create(type: String): Product
+}
+
+class CoffeeFactory
+class TeaFactory
+class SoftDrinkFactory
+class BreadFactory
+class PastryFactory
+class LaunchFactory
+
+ProductFactory <|.. CoffeeFactory
+ProductFactory <|.. TeaFactory
+ProductFactory <|.. SoftDrinkFactory
+ProductFactory <|.. BreadFactory
+ProductFactory <|.. PastryFactory
+ProductFactory <|.. LaunchFactory
+
+ProductFactory ..> Product : crea
+
+note right of ProductFactory
+    Factory Method:
+    cada subfamilia tiene su fabrica
+    concreta que sabe instanciar
+    sus productos a partir de una
+    clave de tipo.
+end note
+
+@enduml

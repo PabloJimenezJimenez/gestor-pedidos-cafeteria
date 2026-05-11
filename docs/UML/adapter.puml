@@ -1,0 +1,36 @@
+@startuml Adapter
+' Patron Adapter. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface PaymentMethod {
+    + charge(amount: Double): Boolean
+}
+
+class BankTPV {
+    + initiateTransaction(): void
+    + readCard(): void
+    + confirmAmount(amount: Double): void
+    + getAuthorizationCode(): String
+}
+
+class BankTPVAdapter {
+    - tpv: BankTPV
+    + charge(amount: Double): Boolean
+}
+
+PaymentMethod <|.. BankTPVAdapter
+BankTPVAdapter o--> "1" BankTPV : tpv
+
+note right of BankTPVAdapter
+    Adapter:
+    traduce charge(amount) a la
+    secuencia que espera el TPV real
+    (initiateTransaction -> readCard
+    -> confirmAmount -> getAuthorizationCode).
+end note
+
+@enduml

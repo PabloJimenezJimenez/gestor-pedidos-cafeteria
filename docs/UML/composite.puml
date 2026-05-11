@@ -1,0 +1,36 @@
+@startuml Composite
+' Patron Composite. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface ItemLaunch {
+    + getPrice(): Double
+    + getDescription(): String
+}
+
+abstract class LaunchProduct
+
+class CombinedDish {
+    - components: List<ItemLaunch>
+    + add(item: ItemLaunch): void
+    + getPrice(): Double
+    + getDescription(): String
+    + prepare(): void
+}
+
+ItemLaunch <|.. LaunchProduct
+ItemLaunch <|.. CombinedDish
+CombinedDish o--> "0..*" ItemLaunch : components
+
+note right of CombinedDish
+    Composite:
+    agrupa varios ItemLaunch (hojas
+    u otros compuestos) y los trata
+    de forma uniforme a traves de
+    la interfaz comun ItemLaunch.
+end note
+
+@enduml

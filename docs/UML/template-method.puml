@@ -1,0 +1,34 @@
+@startuml TemplateMethod
+' Patron Template Method. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+interface Product {
+    + getPrice(): Double
+    + getDescription(): String
+    + prepare(): void
+}
+
+abstract class ProductBase {
+    + {final} prepare(): void
+    # reserveStation(): void
+    # {abstract} prepareIngredients(): void
+    # {abstract} cook(): void
+    # plate(): void
+    # notifyReady(): void
+}
+
+Product <|.. ProductBase
+
+note right of ProductBase
+    Template Method:
+    prepare() es final y fija el orden
+    invariante de los pasos. Las subclases
+    solo rellenan prepareIngredients()
+    y cook() (los pasos variables).
+end note
+
+@enduml

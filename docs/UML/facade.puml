@@ -1,0 +1,37 @@
+@startuml Facade
+' Patron Facade. Vista enfocada — fachada + subsistemas ocultos.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+class CafeteriaManager <<facade>> {
+    + createNewOrder(): Order
+    + createProduct(category: String, type: String): Product
+    + getToppingFactoryFor(beverageName: String): ToppingFactory
+    + addProductToOrder(o: Order, p: Product): void
+    + checkout(o: Order, m: PaymentMethod): Boolean
+    + processKitchenQueue(): void
+    + registerObserverOnOrder(o: Order, obs: OrderObserver): void
+}
+
+package "subsistemas ocultos" {
+    class Catalog
+    class Kitchen
+    class Order
+}
+
+CafeteriaManager o--> "1" Catalog
+CafeteriaManager o--> "1" Kitchen
+CafeteriaManager o--> "0..*" Order : activeOrders
+
+note right of CafeteriaManager
+    Facade:
+    unico punto de entrada para
+    la Terminal. Oculta catalogo,
+    cocina, pagos y estados detras
+    de una API simple.
+end note
+
+@enduml

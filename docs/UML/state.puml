@@ -1,0 +1,46 @@
+@startuml State
+' Patron State. Vista enfocada — solo participantes.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+class Order {
+    - state: OrderState
+    + pay(method: PaymentMethod): void
+    + prepare(): void
+    + markReady(): void
+    + deliver(): void
+    + setState(s: OrderState): void
+}
+
+interface OrderState {
+    + pay(o: Order, m: PaymentMethod): void
+    + prepare(o: Order): void
+    + markReady(o: Order): void
+    + deliver(o: Order): void
+    + getName(): String
+}
+
+class Pending
+class InPreparation
+class Ready
+class Delivered
+
+OrderState <|.. Pending
+OrderState <|.. InPreparation
+OrderState <|.. Ready
+OrderState <|.. Delivered
+
+Order o--> "1" OrderState : state
+
+note right of OrderState
+    State:
+    cada estado concreto implementa
+    solo las transiciones validas;
+    las invalidas lanzan
+    IllegalStateException.
+end note
+
+@enduml
